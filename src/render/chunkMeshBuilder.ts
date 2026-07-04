@@ -65,7 +65,7 @@ export function buildChunkBabylonMesh(
   if (hasAlpha) mat.alpha = 0.65;
   mesh.material = mat;
   mesh.useVertexColors = true;
-  if (hasAlpha) mesh.useVertexAlpha = true;
+  if (hasAlpha) mesh.hasVertexAlpha = true;
   mesh.freezeWorldMatrix();
   mesh.alwaysSelectAsActiveMesh = true;
   return mesh;
