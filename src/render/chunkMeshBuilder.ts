@@ -1,0 +1,76 @@
+import { Mesh, VertexBuffer, Scene, StandardMaterial, Color3 } from "@babylonjs/core";
+import type { ChunkMesh as SimMesh } from "../sim/chunkMesher";
+import { BlockId } from "../sim/blocks";
+
+// Converts a SIM ChunkMesh into a Babylon Mesh named after the chunk coord.
+// Static geometry (no animations), frozen indices/positions for performance.
+
+const BLOCK_COLORS: Record<number, [number, number, number]> = {
+  [BlockId.Grass]: [0.45, 0.78, 0.36],
+  [BlockId.Dirt]:  [0.55, 0.39, 0.24],
+  [BlockId.Stone]: [0.50, 0.50, 0.52],
+  [BlockId.Sand]:  [0.88, 0.82, 0.55],
+  [BlockId.Water]: [0.20, 0.40, 0.85],
+  [BlockId.Wood]:  [0.45, 0.32, 0.18],
+  [BlockId.Leaves]: [0.20, 0.55, 0.20],
+  [BlockId.Bedrock]: [0.18, 0.18, 0.20],
+  [BlockId.Planks]: [0.65, 0.50, 0.30],
+  [BlockId.Cobblestone]: [0.42, 0.42, 0.44],
+  [BlockId.Glass]: [0.70, 0.85, 0.95],
+};
+
+export function buildChunkBabylonMesh(
+  scene: Scene,
+  name: string,
+  sim: SimMesh,
+  originX: number,
+  originY: number,
+  originZ: number,
+): Mesh | null {
+  if (sim.indices.length === 0) return null;
+
+  const mesh = new Mesh(name, scene);
+
+  const vCount = sim.verts.length / 3;
+  const positions = new Float32Array(sim.verts.length);
+  for (let i = 0; i < vCount; i++) {
+    positions[i * 3 + 0] = sim.verts[i * 3 + 0] + originX;
+    positions[i * 3 + 1] = sim.verts[i * 3 + 1] + originY;
+    positions[i * 3 + 2] = sim.verts[i * 3 + 2] + originZ;
+  }
+
+  // Per-vertex color chosen by block id so we have a cheap material pipeline.
+  const colors = new Float32Array(vCount * 4);
+  for (let i = 0; i < vCount; i++) {
+    const id = sim.blocks[i];
+    const col = BLOCK_COLORS[id] ?? [0.7, 0.7, 0.7];
+    // Slight shade variance per face normal for visual interest.
+    const shade = 0.85 + 0.15 * (sim.normals[i * 3 + 1] > 0 ? 1 : 0);
+    colors[i * 4 + 0] = col[0] * shade;
+    colors[i * 4 + 1] = col[1] * shade;
+    colors[i * 4 + 2] = col[2] * shade;
+    colors[i * 4 + 3] = id === BlockId.Glass ? 0.35 : 1.0;
+  }
+
+  mesh.setVerticesData(VertexBuffer.PositionKind, positions, false);
+  mesh.setVerticesData(VertexBuffer.NormalKind, sim.normals, false);
+  mesh.setVerticesData(VertexBuffer.UVKind, sim.uvs, false);
+  mesh.setVerticesData(VertexBuffer.ColorKind, colors, false);
+  mesh.setIndices(sim.indices as unknown as IndicesArray);
+
+  const mat = new StandardMaterial(name + "_mat", scene);
+  mat.diffuseColor = new Color3(1, 1, 1);
+  mat.specularColor = new Color3(0, 0, 0);
+  mat.backFaceCulling = true;
+  // Enable per-vertex color + (for glass) translucency.
+  mat.useVertexColor = true;
+  if (colors.some((_, i) => (i % 4 === 3) && _ < 1)) {
+    mat.alpha = 0.65;
+  }
+  mesh.material = mat;
+  mesh.freezeWorldMatrix();
+  mesh.alwaysSelectAsActiveMesh = true;
+  return mesh;
+}
+
+type IndicesArray = number[] | IndicesArray[];
