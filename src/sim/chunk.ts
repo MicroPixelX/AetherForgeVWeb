@@ -5,6 +5,9 @@ export const CHUNK_SIZE_Y = 32;
 export const CHUNK_SIZE_Z = 32;
 export const CHUNK_VOXEL_COUNT = CHUNK_SIZE_X * CHUNK_SIZE_Y * CHUNK_SIZE_Z;
 
+// Convenience alias when the cube is uniform (we keep 32x32x32).
+export const CHUNK_SIZE = CHUNK_SIZE_X;
+
 export interface ChunkCoord { x: number; y: number; z: number; }
 export interface LocalVoxel  { x: number; y: number; z: number; }
 

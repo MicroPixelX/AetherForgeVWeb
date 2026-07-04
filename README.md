@@ -52,15 +52,28 @@ No unzip, no API key, no Emscripten. The URL works on your phone.
 
 `vercel.json` is included. Import the repo at https://vercel.com/new, framework auto-detected as Vite, deploy → `https://aetherforgev.vercel.app` (or your custom subdomain).
 
+## Controls
+
+| Input | Action |
+|---|---|
+| Click canvas | Pointer lock (grab mouse look) |
+| Mouse move | Look around |
+| W A S D | Move |
+| Shift | Sprint |
+| Space | Jump |
+| LMB | Break block |
+| RMB | Place selected hotbar block |
+| Wheel | Rotate hotbar selection |
+
 ## Roadmap (MVP + crafting + saving, singleplayer)
 
 1. ✅ Project scaffold + Babylon render + test chunk
 2. ✅ SIM layer port (blocks/chunk/mesher/world) + vitest harness
-3. ⬜ Player controller (WASD + pointer-lock look + jump)
-4. ⬜ Positional + place/break blocks via raycast into the World
-5. ⬜ Multi-chunk streaming load/unload around player
-6. ⬜ Worldgen (FastNoiseLite) + biomes
-7. ⬜ Inventory + simple crafting grid + recipes
-8. ⬜ Save/load (chunk + player state, localStorage or IndexedDB)
+3. ✅ Worldgen (noise terrain + biomes + trees)
+4. ✅ Player controller (WASD + pointer-lock look + jump + gravity + AABB collision)
+5. ✅ Place/break blocks via DDA raycast
+6. ✅ Multi-chunk streaming loader around player
+7. ✅ Inventory + crafting recipes + DOM hotbar UI
+8. ✅ Save/load player state via IndexedDB (throttled autosave)
 
 Netcode intentionally deferred — the SIM layer has no engine types, so it can later run server-authoritative.

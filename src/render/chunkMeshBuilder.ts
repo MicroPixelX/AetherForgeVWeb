@@ -62,12 +62,12 @@ export function buildChunkBabylonMesh(
   mat.diffuseColor = new Color3(1, 1, 1);
   mat.specularColor = new Color3(0, 0, 0);
   mat.backFaceCulling = true;
-  // Enable per-vertex color + (for glass) translucency.
-  mat.useVertexColor = true;
+  mat.useVertexAlpha = true;
   if (colors.some((_, i) => (i % 4 === 3) && _ < 1)) {
     mat.alpha = 0.65;
   }
   mesh.material = mat;
+  mesh.useVertexColors = true;
   mesh.freezeWorldMatrix();
   mesh.alwaysSelectAsActiveMesh = true;
   return mesh;
