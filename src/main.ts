@@ -30,9 +30,9 @@ const keys = { forward: false, back: false, left: false, right: false, jump: fal
 new DirectionalLight("sun", new Vector3(-0.5, -1, -0.35), scene).intensity = 0.95;
 new HemisphericLight("hemi", new Vector3(0.2, 1, 0.4), scene).intensity = 0.35;
 
-// World + seed + streamer around spawn.
+// World + seed + streamer around spawn. (Save state restored async below.)
 const world = new World();
-const seed = (loadSave() ?? null) ? ((window as any).__seed = 0x5eed) : ((window as any).__seed = Math.floor(Math.random() * 1e9));
+const seed = Math.floor(Math.random() * 1e9);
 initWorldgen(seed);
 const streamer = new WorldStreamer(world);
 

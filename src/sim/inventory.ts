@@ -2,18 +2,19 @@ import { BlockId } from "./blocks";
 
 export interface Slot { id: BlockId; count: number; }
 const STACK_MAX = 64;
+type SlotOrNull = Slot | null;
 
 const private_refresh = (inv: Inventory) => inv.refreshCb?.();
 
 export class Inventory {
-  hotbar: Slot[] = [];
-  bags: Slot[] = [];
+  hotbar: SlotOrNull[] = [];
+  bags: SlotOrNull[] = [];
   selected = 0;
   refreshCb: (() => void) | null = null;
 
   constructor(hotbarSize = 9, bagSize = 27) {
-    this.hotbar = new Array(hotbarSize).fill(null);
-    this.bags = new Array(bagSize).fill(null);
+    this.hotbar = new Array<SlotOrNull>(hotbarSize).fill(null);
+    this.bags = new Array<SlotOrNull>(bagSize).fill(null);
   }
 
   // Add as many of `id` as possible, returning leftover count.
@@ -25,7 +26,7 @@ export class Inventory {
 
   private _add(id: BlockId, count: number): number {
     let remaining = count;
-    for (const arr of [this.hotbar, this.bags] as Slot[][]) {
+    for (const arr of [this.hotbar, this.bags] as SlotOrNull[][]) {
       for (let i = 0; i < arr.length && remaining > 0; i++) {
         const s = arr[i];
         if (s && s.id === id && s.count < STACK_MAX) {
@@ -34,7 +35,7 @@ export class Inventory {
         }
       }
     }
-    for (const arr of [this.hotbar, this.bags] as Slot[][]) {
+    for (const arr of [this.hotbar, this.bags] as SlotOrNull[][]) {
       for (let i = 0; i < arr.length && remaining > 0; i++) {
         if (!arr[i]) {
           const take = Math.min(STACK_MAX, remaining);

@@ -2,10 +2,14 @@ import { describe, it, expect } from "vitest";
 import { initWorldgen, fillChunk, heightAt } from "../src/sim/worldgen";
 import { World } from "../src/sim/world";
 import { BlockId } from "../src/sim/blocks";
-import { CHUNK_SIZE_X } from "../src/sim/chunk";
 import { WorldStreamer } from "../src/sim/worldStreamer";
 import { Inventory } from "../src/sim/inventory";
 import { matchCraft, matchShapelessWood, RECIPES } from "../src/sim/crafting";
+import type { Slot } from "../src/sim/inventory";
+
+function emptyGrid(): (Slot | null)[] {
+  return [null, null, null, null, null, null, null, null, null];
+}
 
 describe("worldgen", () => {
   it("heightAt is positive within reasonable bounds", () => {
@@ -73,12 +77,12 @@ describe("inventory", () => {
 
 describe("crafting", () => {
   it("shapeless wood -> 4 planks", () => {
-    const grid = [null, null, null, null, null, null, null, null, null];
+    const grid = emptyGrid();
     grid[0] = { id: BlockId.Wood, count: 1 };
     expect(matchShapelessWood(grid)).toEqual({ id: BlockId.Planks, count: 4 });
   });
   it("2x2 cobblestone -> stone", () => {
-    const grid = [null, null, null, null, null, null, null, null, null];
+    const grid = emptyGrid();
     grid[0] = { id: BlockId.Cobblestone, count: 1 };
     grid[1] = { id: BlockId.Cobblestone, count: 1 };
     grid[3] = { id: BlockId.Cobblestone, count: 1 };
@@ -87,7 +91,7 @@ describe("crafting", () => {
     expect(out).toEqual({ id: BlockId.Stone, count: 1 });
   });
   it("no match when wrong shape", () => {
-    const grid = [null, null, null, null, null, null, null, null, null];
+    const grid = emptyGrid();
     grid[0] = { id: BlockId.Dirt, count: 1 };
     expect(matchCraft(grid)).toBeNull();
   });

@@ -39,12 +39,10 @@ export function buildChunkBabylonMesh(
     positions[i * 3 + 2] = sim.verts[i * 3 + 2] + originZ;
   }
 
-  // Per-vertex color chosen by block id so we have a cheap material pipeline.
   const colors = new Float32Array(vCount * 4);
   for (let i = 0; i < vCount; i++) {
     const id = sim.blocks[i];
     const col = BLOCK_COLORS[id] ?? [0.7, 0.7, 0.7];
-    // Slight shade variance per face normal for visual interest.
     const shade = 0.85 + 0.15 * (sim.normals[i * 3 + 1] > 0 ? 1 : 0);
     colors[i * 4 + 0] = col[0] * shade;
     colors[i * 4 + 1] = col[1] * shade;
@@ -56,21 +54,22 @@ export function buildChunkBabylonMesh(
   mesh.setVerticesData(VertexBuffer.NormalKind, sim.normals, false);
   mesh.setVerticesData(VertexBuffer.UVKind, sim.uvs, false);
   mesh.setVerticesData(VertexBuffer.ColorKind, colors, false);
-  mesh.setIndices(sim.indices as unknown as IndicesArray);
+  mesh.setIndices(sim.indices);
 
   const mat = new StandardMaterial(name + "_mat", scene);
   mat.diffuseColor = new Color3(1, 1, 1);
   mat.specularColor = new Color3(0, 0, 0);
   mat.backFaceCulling = true;
-  mat.useVertexAlpha = true;
-  if (colors.some((_, i) => (i % 4 === 3) && _ < 1)) {
-    mat.alpha = 0.65;
-  }
+  let hasAlpha = false;
+  for (let i = 3; i < colors.length; i += 4) if (colors[i] < 1) { hasAlpha = true; break; }
+  if (hasAlpha) mat.alpha = 0.65;
   mesh.material = mat;
   mesh.useVertexColors = true;
+  if (hasAlpha) mesh.useVertexAlpha = true;
   mesh.freezeWorldMatrix();
   mesh.alwaysSelectAsActiveMesh = true;
   return mesh;
+}
 }
 
 type IndicesArray = number[] | IndicesArray[];

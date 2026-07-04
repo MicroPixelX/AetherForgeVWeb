@@ -38,9 +38,10 @@ export async function loadSave(): Promise<WorldSave | null> {
   try {
     const d = await openDb();
     return await new Promise<WorldSave | null>((resolve, reject) => {
-      const tx = d.transaction(STORE, "readonly").objectStore(STORE).get(KEY);
-      tx.onsuccess = () => resolve((tx.result as WorldSave) ?? null);
-      tx.onerror = () => reject(tx.error);
+      const store = d.transaction(STORE, "readonly").objectStore(STORE);
+      const getReq = store.get(KEY);
+      getReq.onsuccess = () => resolve((getReq.result as WorldSave) ?? null);
+      getReq.onerror = () => reject(getReq.error);
     });
   } catch {
     return null;
@@ -50,8 +51,8 @@ export async function loadSave(): Promise<WorldSave | null> {
 export async function saveWorld(s: WorldSave): Promise<void> {
   const d = await openDb();
   await new Promise<void>((resolve, reject) => {
-    const tx = d.transaction(STORE, "readwrite").objectStore(STORE);
-    tx.put(s, KEY);
+    const tx = d.transaction(STORE, "readwrite");
+    tx.objectStore(STORE).put(s, KEY);
     tx.oncomplete = () => resolve();
     tx.onerror = () => reject(tx.error);
   });

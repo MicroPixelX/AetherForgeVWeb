@@ -1,7 +1,6 @@
 import { FreeCamera, Vector3 } from "@babylonjs/core";
 import type { World } from "../sim/world";
 import { BlockId, blockProperties } from "../sim/blocks";
-import { Chunk, CHUNK_SIZE } from "../sim/chunk";
 
 export interface InputState {
   forward: boolean; back: boolean; left: boolean; right: boolean; jump: boolean;
@@ -23,7 +22,6 @@ export class PlayerController {
   private onGround = false;
   private yaw = 0;
   private pitch = 0;
-  private mouseDown = false;
 
   constructor(private camera: FreeCamera, private world: World, private input: InputState) {
     canvasPointerLockHook();
@@ -93,14 +91,12 @@ export class PlayerController {
       if (dx !== 0) this.vel.x = 0;
       if (dz !== 0) this.vel.z = 0;
     } else if (dy < 0) {
-      // Still descending: test a hair below to detect ground contact.
       const probe = p.clone(); probe.y -= 0.05;
       if (this.collides(probe)) { this.onGround = true; }
       else this.onGround = false;
     } else if (dy > 0) {
       this.onGround = false;
     }
-    void CHUNK_SIZE; void Chunk; // suppress unused
   }
 
   // AABB collision: returns true if any solid voxel intersects the player's box.
@@ -138,7 +134,7 @@ export class PlayerController {
     this.applyLook();
   };
 
-  private onLockChange = () => { this.mouseDown = false; };
+  private onLockChange = () => {};
 }
 
 const canvasEl = (typeof document !== "undefined")

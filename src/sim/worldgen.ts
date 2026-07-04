@@ -1,6 +1,6 @@
 // Procedural worldgen: terrain heightmap, simple biomes, tree scatter.
 import { BlockId } from "./blocks";
-import { Chunk, CHUNK_SIZE } from "./chunk";
+import { CHUNK_SIZE } from "./chunk";
 import { World } from "./world";
 import { FastNoiseLite } from "../noise/fastNoiseLite";
 
@@ -70,7 +70,7 @@ export function fillChunk(cx: number, cy: number, cz: number, world: World): voi
   }
 }
 
-function maybePlantTree(world: World, wx: number, wyRoot: number, wz: number, cy: number): void {
+function maybePlantTree(world: World, wx: number, wyRoot: number, wz: number, _cy: number): void {
   const trunk = 4 + (Math.abs(treeNoise.noise2D(wx * 1.7, wz * 1.7)) > 0.4 ? 1 : 0);
   for (let i = 0; i < trunk; i++) world.setBlock(wx, wyRoot + i, wz, BlockId.Wood);
   const topY = wyRoot + trunk;

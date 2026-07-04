@@ -1,5 +1,5 @@
 import { BlockId } from "./blocks";
-import { Chunk, ChunkCoord, CHUNK_SIZE_X, CHUNK_SIZE_Y, CHUNK_SIZE_Z, LocalVoxel } from "./chunk";
+import { Chunk, ChunkCoord, CHUNK_SIZE_X, LocalVoxel } from "./chunk";
 
 function coordKey(c: ChunkCoord): string {
   return c.x + "," + c.y + "," + c.z;

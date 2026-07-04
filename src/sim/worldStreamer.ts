@@ -1,5 +1,5 @@
 import { World } from "./world";
-import { Chunk, CHUNK_SIZE } from "./chunk";
+import { CHUNK_SIZE } from "./chunk";
 import { meshChunk, type ChunkMesh, type NeighborLookup } from "./chunkMesher";
 import { BlockId } from "./blocks";
 import { fillChunk, isInit } from "./worldgen";
