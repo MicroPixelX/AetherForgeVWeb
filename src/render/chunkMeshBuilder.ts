@@ -70,6 +70,3 @@ export function buildChunkBabylonMesh(
   mesh.alwaysSelectAsActiveMesh = true;
   return mesh;
 }
-}
-
-type IndicesArray = number[] | IndicesArray[];
