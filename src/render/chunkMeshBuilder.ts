@@ -43,11 +43,16 @@ export function buildChunkBabylonMesh(
   for (let i = 0; i < vCount; i++) {
     const id = sim.blocks[i];
     const col = BLOCK_COLORS[id] ?? [0.7, 0.7, 0.7];
-    const shade = 0.85 + 0.15 * (sim.normals[i * 3 + 1] > 0 ? 1 : 0);
+    // Strong directional shade so every face is readable; never goes pitch black.
+    const ny = sim.normals[i * 3 + 1];
+    let shade = 0.7;
+    if (ny > 0.5) shade = 1.0;        // top
+    else if (ny < -0.5) shade = 0.55;  // bottom
+    else shade = 0.8;                  // sides
     colors[i * 4 + 0] = col[0] * shade;
     colors[i * 4 + 1] = col[1] * shade;
     colors[i * 4 + 2] = col[2] * shade;
-    colors[i * 4 + 3] = id === BlockId.Glass ? 0.35 : 1.0;
+    colors[i * 4 + 3] = 1.0;  // opaque; alpha handled at material level is too lossy, keep solid
   }
 
   mesh.setVerticesData(VertexBuffer.PositionKind, positions, false);
@@ -58,14 +63,12 @@ export function buildChunkBabylonMesh(
 
   const mat = new StandardMaterial(name + "_mat", scene);
   mat.diffuseColor = new Color3(1, 1, 1);
+  mat.ambientColor = new Color3(1, 1, 1);
   mat.specularColor = new Color3(0, 0, 0);
   mat.backFaceCulling = true;
-  let hasAlpha = false;
-  for (let i = 3; i < colors.length; i += 4) if (colors[i] < 1) { hasAlpha = true; break; }
-  if (hasAlpha) mat.alpha = 0.65;
+  mat.disableLighting = false;  // per-vertex color modulates with light
   mesh.material = mat;
   mesh.useVertexColors = true;
-  if (hasAlpha) mesh.hasVertexAlpha = true;
   mesh.freezeWorldMatrix();
   mesh.alwaysSelectAsActiveMesh = true;
   return mesh;

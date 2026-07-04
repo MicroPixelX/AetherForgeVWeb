@@ -1,5 +1,5 @@
 import {
-  Engine, Scene, FreeCamera, Vector3, Color4,
+  Engine, Scene, FreeCamera, Vector3, Color3, Color4,
   DirectionalLight, HemisphericLight, Mesh,
 } from "@babylonjs/core";
 
@@ -27,8 +27,11 @@ camera.minZ = 0.05;
 camera.fov = 1.05;
 const keys = { forward: false, back: false, left: false, right: false, jump: false };
 
-new DirectionalLight("sun", new Vector3(-0.5, -1, -0.35), scene).intensity = 0.95;
-new HemisphericLight("hemi", new Vector3(0.2, 1, 0.4), scene).intensity = 0.35;
+const sun = new DirectionalLight("sun", new Vector3(-0.5, -1, -0.35), scene); sun.intensity = 1.4;
+const hemi = new HemisphericLight("hemi", new Vector3(0.2, 1, 0.4), scene);
+hemi.intensity = 0.9;
+hemi.diffuse = new Color3(1, 1, 1);
+hemi.groundColor = new Color3(0.45, 0.42, 0.4);
 
 // World + seed + streamer around spawn. (Save state restored async below.)
 const world = new World();
