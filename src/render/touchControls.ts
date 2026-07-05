@@ -31,10 +31,7 @@ export function isTouchDevice(): boolean {
   return "ontouchstart" in window;
 }
 
-export function mountTouchControls(opts: {
-  onBreak?: () => void;
-  onPlace?: () => void;
-}): TouchControls | null {
+export function mountTouchControls(): TouchControls | null {
   if (!isTouchDevice()) return null;
 
   const state: TouchInputState = {

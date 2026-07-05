@@ -15,7 +15,7 @@ import { PlayerController } from "./render/playerController";
 import { BlockPicker } from "./render/blockPicker";
 import { buildChunkBabylonMesh } from "./render/chunkMeshBuilder";
 import { loadSave, savePlayer, getPlayerSave } from "./sim/save";
-import { mountTouchControls, type TouchControls } from "./render/touchControls";
+import { mountTouchControls } from "./render/touchControls";
 
 const canvas = document.getElementById("renderCanvas") as HTMLCanvasElement;
 // adaptToDeviceRatio keeps the framebuffer at devicePixelRatio so mobile screens
@@ -67,10 +67,7 @@ const picker = new BlockPicker(camera, world, inventory);
 // On touch devices, mount the on-screen joystick + buttons and route their
 // state into the existing player/picker inputs each frame. On desktop this
 // returns null and the normal mouse/keyboard handlers stay authoritative.
-const touch = mountTouchControls({
-  onBreak: undefined,
-  onPlace: undefined,
-});
+const touch = mountTouchControls();
 if (touch) {
   // Touch break/place handled synchronously in the render loop below so we
   // can refresh the affected chunk's mesh immediately.
