@@ -17,7 +17,15 @@ import { buildChunkBabylonMesh } from "./render/chunkMeshBuilder";
 import { loadSave, savePlayer, getPlayerSave } from "./sim/save";
 
 const canvas = document.getElementById("renderCanvas") as HTMLCanvasElement;
-const engine = new Engine(canvas, true, { stencil: true });
+// adaptToDeviceRatio keeps the framebuffer at devicePixelRatio so mobile screens
+// aren't pixelated. antialias smooths chunk edges a touch.
+const engine = new Engine(canvas, true, {
+  stencil: true,
+  adaptToDeviceRatio: true,
+  antialias: true,
+  powerPreference: "high-performance",
+});
+engine.setHardwareScalingLevel(1 / Math.min(window.devicePixelRatio || 1, 2));
 const scene = new Scene(engine);
 scene.clearColor = new Color4(0.45, 0.62, 0.85, 1);
 
@@ -172,4 +180,10 @@ engine.runRenderLoop(() => {
   }
 });
 window.addEventListener("unload", () => { savePlayer(getPlayerSave().pos); });
-window.addEventListener("resize", () => engine.resize());
+const resizeWithDelay = () => { engine.resize(); setTimeout(() => engine.resize(), 100); };
+window.addEventListener("resize", resizeWithDelay);
+window.addEventListener("orientationchange", resizeWithDelay);
+document.addEventListener("visibilitychange", () => { if (!document.hidden) engine.resize(); });
+// Force an initial resize on the next frame so the canvas matches real CSS size
+// even on the very first paint (mobile browsers sometimes boot wrong).
+requestAnimationFrame(() => engine.resize());

@@ -21,10 +21,11 @@ export function drawInventoryToDom(inv: Inventory): void {
     root = document.createElement("div");
     root.id = "hotbar";
     Object.assign(root.style, {
-      position: "fixed", left: "50%", bottom: "12px", transform: "translateX(-50%)",
+      position: "fixed", left: "50%", transform: "translateX(-50%)",
       display: "flex", gap: "4px", padding: "6px", borderRadius: "6px",
       background: "rgba(0,0,0,0.45)", pointerEvents: "none", zIndex: "10",
     } as Partial<CSSStyleDeclaration>);
+    root.style.setProperty("bottom", "max(12px, env(safe-area-inset-bottom))");
 
     for (let i = 0; i < 9; i++) {
       const c = document.createElement("div");
