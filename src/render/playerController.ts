@@ -25,6 +25,15 @@ export class PlayerController {
 
   constructor(private camera: FreeCamera, private world: World, private input: InputState) {
     canvasPointerLockHook();
+    this.installLookListeners();
+  }
+
+  private listenersInstalled = false;
+  private installLookListeners(): void {
+    if (this.listenersInstalled) return;
+    this.listenersInstalled = true;
+    document.addEventListener("mousemove", this.onMouse);
+    document.addEventListener("pointerlockchange", this.onLockChange);
   }
 
   setLook(yaw: number, pitch: number): void {
@@ -55,7 +64,6 @@ export class PlayerController {
   }
 
   update(dt: number): void {
-    this.pollMouseLook();
     if (!this.enabled) return;
 
     // Horizontal movement direction in world space from yaw + input.
@@ -128,12 +136,6 @@ export class PlayerController {
           return true;
         }
     return false;
-  }
-
-  private pollMouseLook(): void {
-    // Pointer-lock based look; the document.lock element only fires mousemove deltas when locked.
-    document.addEventListener("mousemove", this.onMouse);
-    document.addEventListener("pointerlockchange", this.onLockChange);
   }
 
   private onMouse = (e: MouseEvent) => {

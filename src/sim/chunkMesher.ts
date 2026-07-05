@@ -8,6 +8,7 @@ export interface ChunkMesh {
   normals: Float32Array; // stride 3
   uvs: Float32Array;     // stride 2
   blocks: Uint16Array;   // per-vertex BlockId
+  faceDirs: Int8Array;   // per-vertex face normal direction (dx,dy,dz) packed
   indices: Uint32Array;
 }
 
@@ -36,6 +37,7 @@ export function meshChunk(chunk: Chunk, neighbor: NeighborLookup | null = null):
   const norms: number[] = [];
   const uvs: number[] = [];
   const blocks: number[] = [];
+  const faceDirs: number[] = [];
   const indices: number[] = [];
 
   for (let y = 0; y < CHUNK_SIZE_Y; y++) {
@@ -65,6 +67,7 @@ export function meshChunk(chunk: Chunk, neighbor: NeighborLookup | null = null):
             norms.push(face.n[0], face.n[1], face.n[2]);
             uvs.push(FACE_UV[f][c][0], FACE_UV[f][c][1]);
             blocks.push(self);
+            faceDirs.push(face.dx, face.dy, face.dz);
           }
           indices.push(base, base + 1, base + 2, base, base + 2, base + 3);
         }
@@ -77,6 +80,7 @@ export function meshChunk(chunk: Chunk, neighbor: NeighborLookup | null = null):
     normals: new Float32Array(norms),
     uvs: new Float32Array(uvs),
     blocks: new Uint16Array(blocks),
+    faceDirs: new Int8Array(faceDirs),
     indices: new Uint32Array(indices),
   };
 }
