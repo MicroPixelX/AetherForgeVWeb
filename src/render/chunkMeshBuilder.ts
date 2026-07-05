@@ -2,8 +2,19 @@ import { Mesh, VertexBuffer, Scene, StandardMaterial, Color3 } from "@babylonjs/
 import type { ChunkMesh as SimMesh } from "../sim/chunkMesher";
 import { BlockId } from "../sim/blocks";
 
-// Converts a SIM ChunkMesh into a Babylon Mesh named after the chunk coord.
-// Static geometry (no animations), frozen indices/positions for performance.
+let sharedMat: StandardMaterial | null = null;
+function getMat(scene: Scene): StandardMaterial {
+  if (sharedMat && sharedMat.getScene() === scene) return sharedMat;
+  const m = new StandardMaterial("aether_chunk_mat", scene);
+  m.diffuseColor = new Color3(1, 1, 1);
+  m.ambientColor = new Color3(1, 1, 1);
+  m.emissiveColor = new Color3(1, 1, 1);
+  m.specularColor = new Color3(0, 0, 0);
+  m.backFaceCulling = true;
+  m.disableLighting = true;
+  sharedMat = m;
+  return m;
+}
 
 const BLOCK_COLORS: Record<number, [number, number, number]> = {
   [BlockId.Grass]: [0.45, 0.78, 0.36],
@@ -30,6 +41,7 @@ export function buildChunkBabylonMesh(
   if (sim.indices.length === 0) return null;
 
   const mesh = new Mesh(name, scene);
+  mesh.useVertexColors = true;
 
   const vCount = sim.verts.length / 3;
   const positions = new Float32Array(sim.verts.length);
@@ -43,16 +55,14 @@ export function buildChunkBabylonMesh(
   for (let i = 0; i < vCount; i++) {
     const id = sim.blocks[i];
     const col = BLOCK_COLORS[id] ?? [0.7, 0.7, 0.7];
-    // Strong directional shade so every face is readable; never goes pitch black.
     const ny = sim.normals[i * 3 + 1];
-    let shade = 0.7;
-    if (ny > 0.5) shade = 1.0;        // top
-    else if (ny < -0.5) shade = 0.55;  // bottom
-    else shade = 0.8;                  // sides
+    let shade = 0.8;
+    if (ny > 0.5) shade = 1.0;
+    else if (ny < -0.5) shade = 0.6;
     colors[i * 4 + 0] = col[0] * shade;
     colors[i * 4 + 1] = col[1] * shade;
     colors[i * 4 + 2] = col[2] * shade;
-    colors[i * 4 + 3] = 1.0;  // opaque; alpha handled at material level is too lossy, keep solid
+    colors[i * 4 + 3] = 1.0;
   }
 
   mesh.setVerticesData(VertexBuffer.PositionKind, positions, false);
@@ -61,14 +71,7 @@ export function buildChunkBabylonMesh(
   mesh.setVerticesData(VertexBuffer.ColorKind, colors, false);
   mesh.setIndices(sim.indices);
 
-  const mat = new StandardMaterial(name + "_mat", scene);
-  mat.diffuseColor = new Color3(1, 1, 1);
-  mat.ambientColor = new Color3(1, 1, 1);
-  mat.specularColor = new Color3(0, 0, 0);
-  mat.backFaceCulling = true;
-  mat.disableLighting = false;  // per-vertex color modulates with light
-  mesh.material = mat;
-  mesh.useVertexColors = true;
+  mesh.material = getMat(scene);
   mesh.freezeWorldMatrix();
   mesh.alwaysSelectAsActiveMesh = true;
   return mesh;

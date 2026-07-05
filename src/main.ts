@@ -71,7 +71,7 @@ const picker = new BlockPicker(camera, world, inventory);
 
 // Chunk meshes: keyed by "cx,cy,cz"; refreshed after edits / on stream updates.
 const meshes = new Map<string, Mesh | null>();
-const RADIUS = 2;
+const RADIUS = 3;
 
 function chunkKey(cx: number, cy: number, cz: number) { return cx + "," + cy + "," + cz; }
 

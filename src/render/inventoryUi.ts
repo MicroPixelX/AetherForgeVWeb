@@ -22,20 +22,34 @@ export function drawInventoryToDom(inv: Inventory): void {
     root.id = "hotbar";
     Object.assign(root.style, {
       position: "fixed", left: "50%", transform: "translateX(-50%)",
-      display: "flex", gap: "4px", padding: "6px", borderRadius: "6px",
-      background: "rgba(0,0,0,0.45)", pointerEvents: "none", zIndex: "10",
+      display: "flex", gap: "6px", padding: "8px",
+      borderRadius: "12px", background: "rgba(15,18,24,0.72)",
+      boxShadow: "0 4px 18px rgba(0,0,0,0.45)",
+      backdropFilter: "blur(6px)",
+      border: "1px solid rgba(255,255,255,0.08)",
+      pointerEvents: "none", zIndex: "10",
     } as Partial<CSSStyleDeclaration>);
-    root.style.setProperty("bottom", "max(12px, env(safe-area-inset-bottom))");
+    root.style.setProperty("bottom", "max(14px, env(safe-area-inset-bottom))");
 
     for (let i = 0; i < 9; i++) {
       const c = document.createElement("div");
       Object.assign(c.style, {
-        width: "40px", height: "40px", borderRadius: "4px",
-        border: "2px solid rgba(255,255,255,0.25)", position: "relative",
-        display: "flex", alignItems: "center", justifyContent: "center",
-        color: "#fff", font: "bold 11px monospace",
-        background: "rgba(255,255,255,0.08)",
+        width: "44px", height: "44px", borderRadius: "8px",
+        position: "relative",
+        display: "flex", alignItems: "flex-end", justifyContent: "center",
+        flex: "0 0 auto",
+        color: "#fff",
+        font: "bold 12px/1 ui-monospace, SFMono-Regular, Menlo, monospace",
+        textShadow: "0 1px 2px rgba(0,0,0,0.9), 0 0 4px rgba(0,0,0,0.7)",
+        boxSizing: "border-box",
+        border: "2px solid transparent",
+        overflow: "hidden",
+        transition: "transform 0.08s ease",
       } as Partial<CSSStyleDeclaration>);
+      const pad = document.createElement("div");
+      pad.style.cssText = "position:absolute;left:0;right:0;bottom:0;padding:2px 0;text-align:center;";
+      pad.textContent = "";
+      c.appendChild(pad);
       cells.push(c);
       root.appendChild(c);
     }
@@ -43,12 +57,13 @@ export function drawInventoryToDom(inv: Inventory): void {
 
     cross = document.createElement("div");
     Object.assign(cross.style, {
-      position: "fixed", left: "50%", top: "50%", width: "14px", height: "14px",
+      position: "fixed", left: "50%", top: "50%", width: "18px", height: "18px",
       transform: "translate(-50%,-50%)", pointerEvents: "none", zIndex: "10",
+      mixBlendMode: "difference", opacity: "0.9",
     } as Partial<CSSStyleDeclaration>);
     cross.style.background =
-      "linear-gradient(to right, transparent 46%, #fff 47%, #fff 53%, transparent 54%)," +
-      "linear-gradient(to bottom, transparent 46%, #fff 47%, #fff 53%, transparent 54%)";
+      "linear-gradient(to right, transparent 44%, #fff 46%, #fff 54%, transparent 56%)," +
+      "linear-gradient(to bottom, transparent 44%, #fff 46%, #fff 54%, transparent 56%)";
     document.body.appendChild(cross);
   }
   refresh(inv);
@@ -61,14 +76,21 @@ function refresh(inv: Inventory): void {
     if (!cell) continue;
     const s: Slot | null = inv.hotbar[i] ?? null;
     const sel = i === inv.selected;
-    cell.style.borderColor = sel ? "#ffd24a" : "rgba(255,255,255,0.25)";
+    cell.style.borderColor = sel ? "#ffd24a" : "rgba(255,255,255,0.10)";
+    cell.style.borderWidth = "2px";
+    cell.style.borderStyle = "solid";
+    cell.style.boxShadow = sel
+      ? "0 0 10px rgba(255,210,74,0.55), inset 0 0 6px rgba(0,0,0,0.35)"
+      : "inset 0 0 6px rgba(0,0,0,0.35)";
+    cell.style.transform = sel ? "scale(1.08)" : "scale(1)";
+    const pad = cell.firstChild as HTMLDivElement;
     if (s) {
-      cell.style.background = (BLOCK_COLOR[s.id] ?? "#888");
-      cell.textContent = s.count > 1 ? String(s.count) : "";
-      cell.style.color = "#0b0d10";
+      cell.style.background = `linear-gradient(${BLOCK_COLOR[s.id] ?? "#888"}, ${BLOCK_COLOR[s.id] ?? "#888"})`;
+      pad.textContent = s.count > 1 ? String(s.count) : "";
+      pad.style.color = "#fff";
     } else {
-      cell.style.background = "rgba(255,255,255,0.08)";
-      cell.textContent = "";
+      cell.style.background = "rgba(255,255,255,0.06)";
+      pad.textContent = "";
     }
     cell.title = s ? blockProperties(s.id).name : "";
   }
