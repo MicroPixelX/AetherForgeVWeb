@@ -15,6 +15,7 @@ import { PlayerController } from "./render/playerController";
 import { BlockPicker } from "./render/blockPicker";
 import { buildChunkBabylonMesh } from "./render/chunkMeshBuilder";
 import { loadSave, savePlayer, getPlayerSave } from "./sim/save";
+import { mountTouchControls, type TouchControls } from "./render/touchControls";
 
 const canvas = document.getElementById("renderCanvas") as HTMLCanvasElement;
 // adaptToDeviceRatio keeps the framebuffer at devicePixelRatio so mobile screens
@@ -62,6 +63,21 @@ const player = new PlayerController(camera, world, keys);
 player.enabled = true;
 
 const picker = new BlockPicker(camera, world, inventory);
+
+// On touch devices, mount the on-screen joystick + buttons and route their
+// state into the existing player/picker inputs each frame. On desktop this
+// returns null and the normal mouse/keyboard handlers stay authoritative.
+const touch = mountTouchControls({
+  onBreak: undefined,
+  onPlace: undefined,
+});
+if (touch) {
+  // Touch break/place handled synchronously in the render loop below so we
+  // can refresh the affected chunk's mesh immediately.
+  (window as any).__aetherTouch = touch;
+  // Click-to-lock is desktop only; suppress on mobile to avoid focus loss.
+  canvas.style.touchAction = "none";
+}
 
 // Restore saved player position.
 (async () => {
@@ -156,6 +172,31 @@ let hud = document.getElementById("hud")!;
 let frames = 0, lastStreamAt = performance.now();
 engine.runRenderLoop(() => {
   const dt = engine.getDeltaTime() / 1000;
+
+  if (touch && touch.enabled) {
+    if (touch.state.move.x !== 0 || touch.state.move.y !== 0) {
+      (window as any).__aetherSprint = touch.state.sprint;
+      keys.forward = touch.state.move.y < -0.15;
+      keys.back    = touch.state.move.y >  0.15;
+      keys.left    = touch.state.move.x < -0.15;
+      keys.right   = touch.state.move.x >  0.15;
+      keys.jump    = keys.jump || touch.state.jump;
+    } else if (!touch.state.jump) {
+      keys.forward = false; keys.back = false; keys.left = false; keys.right = false;
+    }
+    const l = touch.consumeLook();
+    player.applyLookDelta(l.dx, l.dy);
+    if (touch.state.breakRequested) {
+      const hit = picker.tryBreak();
+      if (hit) refreshAfterEdit(hit.x, hit.y, hit.z);
+    }
+    if (touch.state.placeRequested) {
+      const placed = picker.tryPlace();
+      if (placed) refreshAfterEdit(placed.x, placed.y, placed.z);
+    }
+    touch.endFrame();
+  }
+
   player.update(dt);
 
   // Stream chunks following the player ~4 times per second.
@@ -176,7 +217,11 @@ engine.runRenderLoop(() => {
   frames++;
   if (hud && frames % 10 === 0) {
     const p = camera.position;
-    hud.textContent = `AetherForgeV alpha · WASD move · Space jump · Shift run · LMB break · RMB place · wheel hotbar · pos ${p.x.toFixed(0)},${p.y.toFixed(0)},${p.z.toFixed(0)}`;
+    if (touch) {
+      hud.textContent = `AetherForgeV alpha · left stick move · right drag look · BREAK PLACE JUMP buttons · pos ${p.x.toFixed(0)},${p.y.toFixed(0)},${p.z.toFixed(0)}`;
+    } else {
+      hud.textContent = `AetherForgeV alpha · WASD move · Space jump · Shift run · LMB break · RMB place · wheel hotbar · pos ${p.x.toFixed(0)},${p.y.toFixed(0)},${p.z.toFixed(0)}`;
+    }
   }
 });
 window.addEventListener("unload", () => { savePlayer(getPlayerSave().pos); });

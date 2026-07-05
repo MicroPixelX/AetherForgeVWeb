@@ -32,6 +32,19 @@ export class PlayerController {
     this.applyLook();
   }
 
+  // Apply an external look delta (used by touch dragging since pointer lock
+  // is unavailable on mobile). Same sensitivity as mouse for consistency.
+  applyLookDelta(dx: number, dy: number): void {
+    if (dx === 0 && dy === 0) return;
+    const sens = 0.0024;
+    this.yaw -= dx * sens;
+    this.pitch -= dy * sens;
+    const lim = Math.PI / 2 - 0.02;
+    if (this.pitch > lim) this.pitch = lim;
+    if (this.pitch < -lim) this.pitch = -lim;
+    this.applyLook();
+  }
+
   private applyLook(): void {
     const dir = new Vector3(
       Math.sin(this.yaw) * Math.cos(this.pitch),
